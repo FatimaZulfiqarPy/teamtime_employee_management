@@ -84,11 +84,19 @@ export default function AdminDashboard() {
           return attDate === today && att.timeIn;
         }).length;
         
+       
+        
         // Employees on approved leave today
         const onLeave = leaves.filter(leave => {
-          const start = new Date(leave.startDate).toISOString().split('T')[0];
-          const end = new Date(leave.endDate).toISOString().split('T')[0];
-          return leave.status === 'approved' && today >= start && today <= end;
+          if (leave.status !== 'approved') return false;
+          
+          const start = new Date(leave.startDate);
+          start.setHours(0, 0, 0, 0);
+          
+          const end = new Date(leave.endDate);
+          end.setHours(0, 0, 0, 0);
+          
+          return today >= start && today <= end;
         }).length;
         
         // New requests today
@@ -386,9 +394,6 @@ export default function AdminDashboard() {
                   </div>
                   <span className="text-xs font-medium text-emerald-600">{dept.present} present</span>
                 </div>
-                {dept.leave > 0 && (
-                  <p className="text-xs text-amber-600 mt-1">{dept.leave} on leave</p>
-                )}
               </div>
             ))}
           </div>

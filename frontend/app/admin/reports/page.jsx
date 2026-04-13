@@ -84,24 +84,25 @@ export default function ReportsPage() {
     
     switch(reportType) {
       case 'attendance': {
-        let filteredAttendance = attendance;
+        // Get ALL employees (total count)
+        const totalEmployees = employees.length;
         
-        if (startDate && endDate) {
-          filteredAttendance = attendance.filter(att => {
-            const attDate = new Date(att.date);
-            return attDate >= startDate && attDate <= endDate;
-          });
-        }
+        // Get today's date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0];
         
-        const total = filteredAttendance.length;
-        const present = filteredAttendance.filter(att => att.status === 'present' && att.timeIn).length;
-        const absent = filteredAttendance.filter(att => att.status === 'absent' || !att.timeIn).length;
+        // Count employees who clocked in today
+        const presentToday = attendance.filter(att => {
+          const attDate = new Date(att.date);
+          attDate.setHours(0, 0, 0, 0);
+          return attDate.toISOString().split('T')[0] === todayStr && att.timeIn;
+        }).length;
         
         return {
-          total,
-          present,
-          absent,
-          late: 0
+          total: totalEmployees,      // Total employees in company
+          present: presentToday,      // Clocked in today
+          absent: totalEmployees - presentToday
         };
       }
       
@@ -237,11 +238,11 @@ export default function ReportsPage() {
       
       switch(report.type) {
         case 'attendance':
-          csvContent = `Attendance Report (${startDate} - ${endDate})\n\n`;
-          csvContent += `Total Records,${report.stats.total}\n`;
-          csvContent += `Present,${report.stats.present}\n`;
-          csvContent += `Absent,${report.stats.absent}\n`;
-          csvContent += `Attendance Rate,${report.stats.total > 0 ? ((report.stats.present/report.stats.total)*100).toFixed(1) : 0}%\n`;
+          csvContent = `Monthly Attendance Report (${startDate} - ${endDate})\n\n`;
+          csvContent += `Total Employees,${report.stats.total}\n`;
+          csvContent += `Present Today,${report.stats.present}\n`;
+          csvContent += `Absent Today,${report.stats.absent}\n`;
+          csvContent += `Attendance Rate,${((report.stats.present/report.stats.total)*100).toFixed(1)}%\n`;
           break;
           
         case 'leaves':

@@ -1,19 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Clock,
-  FileText,
-  BarChart3,
-  Menu,
-  LogOut,
-  UserCircle,
-  ChevronLeft,
-  ChevronRight,
-  Bell,
-  Settings
+    LayoutDashboard,
+    Users,
+    Building2,
+    Clock,
+    FileText,
+    BarChart3,
+    Menu,
+    LogOut,
+    UserCircle,
+    ChevronLeft,
+    ChevronRight,
+    Bell,
+    Settings,
+    CalendarDays
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -58,7 +59,7 @@ export default function AdminLayout({ children }) {
                 const response = await fetch('http://localhost:5000/api/leaves', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     const leaves = await response.json();
                     const pending = leaves.filter(l => l.status === 'pending').length;
@@ -89,43 +90,50 @@ export default function AdminLayout({ children }) {
     }, []);
 
     const menuItems = [
-        { 
-            name: "Dashboard", 
-            icon: <LayoutDashboard size={22} />, 
+        {
+            name: "Dashboard",
+            icon: <LayoutDashboard size={22} />,
             path: "/admin/dashboard",
             description: "Overview & stats"
         },
-        { 
-            name: "Employees", 
-            icon: <Users size={22} />, 
+        {
+            name: "Employees",
+            icon: <Users size={22} />,
             path: "/admin/employees",
             description: "Manage team members"
         },
-        { 
-            name: "Departments", 
-            icon: <Building2 size={22} />, 
+        {
+            name: "Departments",
+            icon: <Building2 size={22} />,
             path: "/admin/departments",
             description: "Organization structure"
         },
-        { 
-            name: "Attendance", 
-            icon: <Clock size={22} />, 
+        {
+            name: "Attendance",
+            icon: <Clock size={22} />,
             path: "/admin/attendance",
             description: "Track attendance"
         },
-        { 
-            name: "Leave Requests", 
-            icon: <FileText size={22} />, 
+        {
+            name: "Leave Requests",
+            icon: <FileText size={22} />,
             path: "/admin/leaverequests",
             description: "Manage time off",
             badge: pendingLeaves
         },
-        { 
-            name: "Reports", 
-            icon: <BarChart3 size={22} />, 
+        {
+            name: "Reports",
+            icon: <BarChart3 size={22} />,
             path: "/admin/reports",
             description: "Analytics & reports"
         },
+        {
+            name: "Leave Settings",
+            icon: <CalendarDays size={22} />,
+            path: "/admin/leave-settings",
+            description: "Configure leave limits"
+        }
+
     ];
 
     const handleLogout = () => {
@@ -138,18 +146,17 @@ export default function AdminLayout({ children }) {
     };
 
     // Get current page info
-    const currentPage = menuItems.find(item => item.path === pathname) || { 
-        name: "Dashboard", 
-        description: "Welcome back, Admin" 
+    const currentPage = menuItems.find(item => item.path === pathname) || {
+        name: "Dashboard",
+        description: "Welcome back, Admin"
     };
 
     return (
         <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
             {/* Sidebar */}
             <div
-                className={`relative h-screen flex flex-col bg-white/90 backdrop-blur-xl border-r border-indigo-100 shadow-2xl transition-all duration-300 ${
-                    isOpen ? "w-72" : "w-24"
-                } ${isMobile && !isOpen ? 'absolute z-50' : ''}`}
+                className={`relative h-screen flex flex-col bg-white/90 backdrop-blur-xl border-r border-indigo-100 shadow-2xl transition-all duration-300 ${isOpen ? "w-72" : "w-24"
+                    } ${isMobile && !isOpen ? 'absolute z-50' : ''}`}
             >
                 {/* Logo & Toggle Section */}
                 <div className={`flex items-center ${isOpen ? 'justify-between' : 'justify-center'} p-5 border-b border-indigo-100 bg-gradient-to-r from-indigo-50/50 to-purple-50/50`}>
@@ -214,16 +221,15 @@ export default function AdminLayout({ children }) {
                                 <li key={item.name}>
                                     <Link
                                         href={item.path}
-                                        className={`flex items-center ${isOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl transition-all duration-200 group relative no-underline ${
-                                            isActive 
-                                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200/50' 
-                                                : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'
-                                        }`}
+                                        className={`flex items-center ${isOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl transition-all duration-200 group relative no-underline ${isActive
+                                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200/50'
+                                            : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'
+                                            }`}
                                     >
                                         <span className={`${isActive ? 'text-white' : 'text-gray-500 group-hover:text-indigo-600'} transition-colors`}>
                                             {item.icon}
                                         </span>
-                                        
+
                                         {isOpen && (
                                             <div className="flex-1 flex items-center justify-between">
                                                 <div>
@@ -239,12 +245,12 @@ export default function AdminLayout({ children }) {
                                                 )}
                                             </div>
                                         )}
-                                        
+
                                         {/* Active Indicator */}
                                         {isActive && !isOpen && (
                                             <span className="absolute left-0 w-1 h-8 bg-white rounded-r-full"></span>
                                         )}
-                                        
+
                                         {/* Tooltip for collapsed state */}
                                         {!isOpen && (
                                             <span className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-xl">
@@ -301,7 +307,7 @@ export default function AdminLayout({ children }) {
                                 {currentPage.description}
                             </p>
                         </div>
-                        
+
                         {/* Right side actions */}
                         <div className="flex items-center gap-3">
                             {/* Notification Bell with Real Count */}
@@ -313,10 +319,10 @@ export default function AdminLayout({ children }) {
                                     </span>
                                 )}
                             </button>
-                            
+
                             {/* Profile Dropdown */}
                             <div className="relative">
-                                <button 
+                                <button
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold hover:shadow-lg hover:scale-105 transition-all border-2 border-white shadow-md"
                                 >
@@ -327,11 +333,11 @@ export default function AdminLayout({ children }) {
                                 {isProfileOpen && (
                                     <>
                                         {/* Backdrop */}
-                                        <div 
+                                        <div
                                             className="fixed inset-0 z-30"
                                             onClick={() => setIsProfileOpen(false)}
                                         />
-                                        
+
                                         {/* Dropdown */}
                                         <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-indigo-100 overflow-hidden z-40">
                                             {/* Header */}
@@ -349,7 +355,7 @@ export default function AdminLayout({ children }) {
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Menu Items */}
                                             <div className="p-2">
                                                 <button
@@ -362,7 +368,7 @@ export default function AdminLayout({ children }) {
                                                     <UserCircle size={18} className="text-indigo-600" />
                                                     <span className="font-medium">My Profile</span>
                                                 </button>
-                                                
+
                                                 <button
                                                     onClick={() => {
                                                         setIsProfileOpen(false);
@@ -373,9 +379,9 @@ export default function AdminLayout({ children }) {
                                                     <Settings size={18} className="text-indigo-600" />
                                                     <span className="font-medium">Settings</span>
                                                 </button>
-                                                
+
                                                 <div className="border-t border-gray-100 my-2"></div>
-                                                
+
                                                 <button
                                                     onClick={handleLogout}
                                                     className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors group"

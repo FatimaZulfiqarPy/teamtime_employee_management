@@ -29,7 +29,6 @@ export default function LeavesPage() {
     annual: { total: 0, used: 0, remaining: 0 },
     sick: { total: 0, used: 0, remaining: 0 },
     casual: { total: 0, used: 0, remaining: 0 },
-    unpaid: { total: 0, used: 0, remaining: 0 }
   });
   const [recentRequests, setRecentRequests] = useState([]);
   const [user, setUser] = useState({ id: "", name: "" });
@@ -72,8 +71,7 @@ export default function LeavesPage() {
         const sorted = leaves.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setRecentRequests(sorted.slice(0, 3));
         
-        // 2️⃣ Calculate leave balances (mock for now - will come from backend later)
-        // Count used leaves by type
+        // 2️⃣ Calculate used leaves by type
         const usedAnnual = leaves.filter(l => l.leaveType === 'annual' && l.status === 'approved')
           .reduce((sum, l) => sum + l.days, 0);
         const usedSick = leaves.filter(l => l.leaveType === 'sick' && l.status === 'approved')
@@ -81,12 +79,27 @@ export default function LeavesPage() {
         const usedCasual = leaves.filter(l => l.leaveType === 'casual' && l.status === 'approved')
           .reduce((sum, l) => sum + l.days, 0);
         
-        setLeaveBalance({
-          annual: { total: 12, used: usedAnnual, remaining: 12 - usedAnnual },
-          sick: { total: 10, used: usedSick, remaining: 10 - usedSick },
-          casual: { total: 5, used: usedCasual, remaining: 5 - usedCasual },
-          unpaid: { total: 0, used: 0, remaining: 0 }
+        // 3️⃣ Fetch leave settings from backend
+        const settingsRes = await fetch('http://localhost:5000/api/leave-settings', {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (settingsRes.ok) {
+          const settings = await settingsRes.json();
+          
+          setLeaveBalance({
+            annual: { total: settings.annual, used: usedAnnual, remaining: settings.annual - usedAnnual },
+            sick: { total: settings.sick, used: usedSick, remaining: settings.sick - usedSick },
+            casual: { total: settings.casual, used: usedCasual, remaining: settings.casual - usedCasual }
+          });
+        } else {
+          // Fallback to defaults
+          setLeaveBalance({
+            annual: { total: 12, used: usedAnnual, remaining: 12 - usedAnnual },
+            sick: { total: 10, used: usedSick, remaining: 10 - usedSick },
+            casual: { total: 5, used: usedCasual, remaining: 5 - usedCasual }
+          });
+        }
         
       } catch (error) {
         console.error("Error fetching leaves:", error);
@@ -110,13 +123,21 @@ export default function LeavesPage() {
 
   const calculateDays = () => {
     if (!formData.start || !formData.end) return 0;
-    const start = new Date(formData.start);
+    
+    let start = new Date(formData.start);
     const end = new Date(formData.end);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return formData.halfDay ? diffDays - 0.5 : diffDays;
+    let count = 0;
+    
+    while (start <= end) {
+      const dayOfWeek = start.getDay(); // 0 = Sunday, 6 = Saturday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclude Sat & Sun
+        count++;
+      }
+      start.setDate(start.getDate() + 1);
+    }
+    
+    return formData.halfDay ? count - 0.5 : count;
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { start, end, reason, leaveType, halfDay } = formData;
@@ -142,6 +163,31 @@ export default function LeavesPage() {
       });
       return;
     }
+
+    // Check for overlapping leave
+  const overlappingLeave = recentRequests.some(request => {
+    const existingStart = new Date(request.startDate);
+    const existingEnd = new Date(request.endDate);
+    const newStart = new Date(start);
+    const newEnd = new Date(end);
+    
+    return (request.status === 'pending' || request.status === 'approved') && (
+      (newStart >= existingStart && newStart <= existingEnd) ||
+      (newEnd >= existingStart && newEnd <= existingEnd) ||
+      (newStart <= existingStart && newEnd >= existingEnd)
+    );
+  });
+  
+  if (overlappingLeave) {
+    setMessage({ text: " You already have a leave request for these dates!", type: "error" });
+    return;
+  }
+
+  if (daysRequested === 0) {
+    setMessage({ text: " No working days selected. Please select working days (Monday to Friday)", type: "error" });
+    return;
+  }
+
 
     // Submit to backend
     try {
@@ -387,8 +433,8 @@ export default function LeavesPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Leave Type
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {['annual', 'sick', 'casual', 'unpaid'].map((type) => (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {['annual', 'sick', 'casual'].map((type) => (
                     <label
                       key={type}
                       className={`relative flex items-center justify-center px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${
@@ -423,7 +469,7 @@ export default function LeavesPage() {
                     name="start"
                     value={formData.start}
                     onChange={handleChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                     className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                   />
                 </div>
@@ -437,7 +483,7 @@ export default function LeavesPage() {
                     name="end"
                     value={formData.end}
                     onChange={handleChange}
-                    min={formData.start || new Date().toISOString().split('T')[0]}
+                    min={formData.start || new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                     className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                   />
                 </div>

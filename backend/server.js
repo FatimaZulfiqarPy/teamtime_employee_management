@@ -10,6 +10,7 @@ const leaveRoutes = require('./routes/leaveRoutes');
 const userRoutes = require('./routes/userRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
+const leaveSettingRoutes = require('./routes/leaveSettingRoutes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/leaves', leaveRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/departments', departmentRoutes);
+app.use('/api/leave-settings', leaveSettingRoutes);
 
 // Test route
 app.get('/', (req, res) => {

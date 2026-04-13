@@ -86,18 +86,27 @@ export default function EmployeeDashboard() {
       try {
         const token = localStorage.getItem('token');
         if (!token || !user.id) return;
-
+    
         // 1️⃣ Get today's attendance status
         const todayRes = await fetch(`http://localhost:5000/api/attendance/my-attendance?userId=${user.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const todayData = await todayRes.json();
         
-        const today = new Date().toISOString().split('T')[0];
-        const todayRecord = todayData.find(record => 
-          record.date.split('T')[0] === today
-        );
-
+        // ✅ Get today's date in local timezone
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0];
+        
+        // ✅ Find today's record
+        const todayRecord = todayData.find(record => {
+          const recordDate = new Date(record.date);
+          recordDate.setHours(0, 0, 0, 0);
+          return recordDate.toISOString().split('T')[0] === todayStr;
+        });
+    
+        console.log("Dashboard Debug:", { todayStr, todayRecord });
+    
         if (todayRecord) {
           setAttendanceState({
             timeIn: todayRecord.timeIn,
@@ -106,7 +115,7 @@ export default function EmployeeDashboard() {
             todayRecord
           });
         }
-
+    
         // 2️⃣ Get recent attendance (last 7 days)
         const recentRes = await fetch(`http://localhost:5000/api/attendance/my-attendance?userId=${user.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -115,7 +124,7 @@ export default function EmployeeDashboard() {
         
         const sorted = recentData.sort((a, b) => new Date(b.date) - new Date(a.date));
         setRecentAttendance(sorted.slice(0, 7));
-
+    
         // 3️⃣ Calculate weekly hours
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
@@ -130,13 +139,13 @@ export default function EmployeeDashboard() {
         
         const hours = Math.floor(totalWeeklyHours);
         const minutes = Math.round((totalWeeklyHours - hours) * 60);
-
+    
         // 4️⃣ Get leave data
         const leaveResponse = await fetch(`http://localhost:5000/api/leaves/me?userId=${user.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const leaveData = await leaveResponse.json();
-
+    
         const totalLeavesLeft = 
           (12 - leaveData.filter(l => l.leaveType === 'annual' && l.status === 'approved')
             .reduce((sum, l) => sum + l.days, 0)) +
@@ -144,16 +153,16 @@ export default function EmployeeDashboard() {
             .reduce((sum, l) => sum + l.days, 0)) +
           (5 - leaveData.filter(l => l.leaveType === 'casual' && l.status === 'approved')
             .reduce((sum, l) => sum + l.days, 0));
-
+    
         const pendingCount = leaveData.filter(l => l.status === 'pending').length;
-
+    
         setStats({
           todayStatus: todayRecord ? (todayRecord.timeOut ? "Completed" : "Active") : "Not Started",
           weeklyHours: `${hours}h ${minutes}m`,
           leavesLeft: totalLeavesLeft,
           pendingApprovals: pendingCount
         });
-
+    
       } catch (error) {
         console.error("Error fetching dashboard:", error);
         setMessage({ text: "Error loading dashboard data", type: "error" });
