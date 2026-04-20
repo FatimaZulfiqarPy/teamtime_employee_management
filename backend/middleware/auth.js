@@ -15,12 +15,12 @@ const protect = async (req, res, next) => {
             // 5️⃣ Continue to the actual API function
             next();
         } catch (error) {
-            res.status(401).json({ message: 'Not authorized' });
+            return res.status(401).json({ message: 'Not authorized' });
         }
     }
     // No token provided
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        return res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
 

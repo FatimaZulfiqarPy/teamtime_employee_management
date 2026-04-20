@@ -457,37 +457,44 @@ export default function LeavesPage() {
                 </div>
               </div>
 
-              {/* Date Range */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-indigo-600" />
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    name="start"
-                    value={formData.start}
-                    onChange={handleChange}
-                    min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-indigo-600" />
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    name="end"
-                    value={formData.end}
-                    onChange={handleChange}
-                    min={formData.start || new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-              </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+      <CalendarIcon className="h-4 w-4 text-indigo-600" />
+      Start Date
+    </label>
+    <input
+      type="date"
+      name="start"
+      value={formData.start}
+      onChange={handleChange}
+      min={(() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toLocaleDateString('en-CA');
+      })()}
+      className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+    />
+  </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+      <CalendarIcon className="h-4 w-4 text-indigo-600" />
+      End Date
+    </label>
+    <input
+      type="date"
+      name="end"
+      value={formData.end}
+      onChange={handleChange}
+      min={formData.start || (() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toLocaleDateString('en-CA');
+      })()}
+      className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+    />
+  </div>
+</div>
 
               {/* Half Day Option */}
               <div className="flex items-center gap-2">

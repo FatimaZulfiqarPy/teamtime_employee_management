@@ -40,12 +40,12 @@ const updateLeaveSettings = async (req, res) => {
         
         await settings.save();
         
-        res.json({
+        return res.json({
             message: '✅ Leave settings updated successfully',
             settings
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 

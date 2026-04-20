@@ -5,9 +5,9 @@ const Department = require('../models/Department');
 const getAllDepartments = async (req, res) => {
     try {
         const departments = await Department.find().sort({ name: 1 });
-        res.json(departments);
+        return res.json(departments);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -19,9 +19,9 @@ const getDepartmentById = async (req, res) => {
         if (!department) {
             return res.status(404).json({ message: 'Department not found' });
         }
-        res.json(department);
+        return res.json(department);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -46,12 +46,12 @@ const createDepartment = async (req, res) => {
             location
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message: '✅ Department created successfully',
             department
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -69,12 +69,12 @@ const updateDepartment = async (req, res) => {
             return res.status(404).json({ message: 'Department not found' });
         }
 
-        res.json({
+        return res.json({
             message: '✅ Department updated successfully',
             department
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -88,11 +88,11 @@ const deleteDepartment = async (req, res) => {
             return res.status(404).json({ message: 'Department not found' });
         }
 
-        res.json({
+        return res.json({
             message: '✅ Department deleted successfully'
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 

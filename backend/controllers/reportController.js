@@ -32,7 +32,7 @@ const getMonthlyReport = async (req, res) => {
         // Get user info
         const user = await User.findById(userId).select('name email department');
         
-        res.json({
+        return res.json({
             user,
             period: { year, month },
             summary: {
@@ -47,7 +47,7 @@ const getMonthlyReport = async (req, res) => {
         });
         
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 

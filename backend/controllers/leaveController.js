@@ -30,14 +30,14 @@ const createLeaveRequest = async (req, res) => {
             status: 'pending'
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message: '✅ Leave request submitted successfully',
             leave
         });
 
     } catch (error) {
         console.error('Create leave error:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -52,11 +52,11 @@ const getMyLeaves = async (req, res) => {
         .populate('user', 'name email department') // 👈 ADD THIS
             .sort({ createdAt: -1 }); // Newest first
 
-        res.json(leaves);
+        return res.json(leaves);
 
     } catch (error) {
         console.error('Get my leaves error:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -65,16 +65,21 @@ const getMyLeaves = async (req, res) => {
 // @access  Private (Admin only)
 const getAllLeaves = async (req, res) => {
     try {
+        // Security check: only admin can view all leaves
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Only admin allowed to view all leaves" });
+        }        
+
         // Get all leaves with user details
         const leaves = await Leave.find()
             .populate('user', 'name email department') // Get user info
             .sort({ createdAt: -1 });
 
-        res.json(leaves);
+        return res.json(leaves);
 
     } catch (error) {
         console.error('Get all leaves error:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -83,6 +88,10 @@ const getAllLeaves = async (req, res) => {
 // @access  Private (Admin only)
 const updateLeaveStatus = async (req, res) => {
     try {
+        // Security check: only admin can approve/reject leaves
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Only admin allowed to approve/reject leaves" });
+        }
         const { id } = req.params;
         const { status } = req.body; // 'approved' or 'rejected'
 
@@ -109,7 +118,7 @@ const updateLeaveStatus = async (req, res) => {
 
     } catch (error) {
         console.error('Update leave error:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 

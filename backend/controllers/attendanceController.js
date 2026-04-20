@@ -3,11 +3,10 @@ const Attendance = require('../models/Attendance');
 // Time In
 const timeIn = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { userId } = req.user.id;
 
         // Get today's date (just the date part)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = new Date().toISOString().split('T')[0];
 
         // Check if already recorded today
         let attendance = await Attendance.findOne({
@@ -45,13 +44,13 @@ const timeIn = async (req, res) => {
 
         await attendance.save();
 
-        res.json({
+        return res.json({
             message: "✅ Time In recorded",
             timeIn: attendance.timeIn
         });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -59,10 +58,9 @@ const timeIn = async (req, res) => {
 
 const timeOut = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { userId } = req.user.id;
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = new Date().toISOString().split('T')[0];
 
         // Find today's record
         const attendance = await Attendance.findOne({
@@ -103,13 +101,13 @@ const timeOut = async (req, res) => {
         
         await attendance.save();
 
-        res.json({
+        return res.json({
             message: "✅ Time Out recorded",
             hours: attendance.totalHours
         });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -122,10 +120,10 @@ const getMyAttendance = async (req, res) => {
             .sort({ date: -1 }) // Newest first
             .limit(30); // Last 30 days only
 
-        res.json(records);
+        return res.json(records);
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -146,10 +144,10 @@ const getAllAttendance = async (req, res) => {
             .populate('user', 'name email') // Get user details
             .sort({ date: -1 });
 
-        res.json(records);
+        return res.json(records);
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 

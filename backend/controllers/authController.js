@@ -25,7 +25,7 @@ const registerUser = async (req, res) => {
             role: role || 'employee'
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message: 'User registered successfully',
             user: {
                 id: user._id,
@@ -35,7 +35,7 @@ const registerUser = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 // 👇 ADD THIS LOGIN FUNCTION 👇
@@ -68,7 +68,7 @@ const loginUser = async (req, res) => {
         );
 
         // Login successful
-        res.status(200).json({
+        return res.status(200).json({
             message: '✅ Login successful',
             token,
             user: {
@@ -79,7 +79,7 @@ const loginUser = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
