@@ -8,9 +8,9 @@ const getAllUsers = async (req, res) => {
             .select('-password')
             .sort({ name: 1 });
             
-        res.json(users);
+        return res.json(users);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -25,9 +25,9 @@ const getUserById = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         
-        res.json(user);
+        return res.json(user);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -35,6 +35,11 @@ const getUserById = async (req, res) => {
 // @route   PUT /api/users/:id
 const updateUser = async (req, res) => {
     try {
+        //extract role from req.body and delete it to prevent role update
+
+        if (req.user.id !== req.params.id && req.user.role !== "admin") {
+            return res.status(403).json({ message: "Not allowed to update this user" });
+        }
         const user = await User.findByIdAndUpdate(
             req.params.id,
             req.body,
@@ -45,12 +50,12 @@ const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         
-        res.json({
+        return res.json({
             message: '✅ User updated successfully',
             user
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -58,15 +63,19 @@ const updateUser = async (req, res) => {
 // @route   DELETE /api/users/:id
 const deleteUser = async (req, res) => {
     try {
+        // Security check only admin can delete users
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Not allowed to delete users" });
+        }
         const user = await User.findByIdAndDelete(req.params.id);
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
         
-        res.json({ message: '✅ User deleted successfully' });
+        return res.json({ message: '✅ User deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
